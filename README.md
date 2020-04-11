@@ -1,0 +1,1 @@
+# fritzcollectd-docker
