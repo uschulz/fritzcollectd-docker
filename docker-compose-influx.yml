@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  collectd:
+    hostname: collectd
+    image: uschulz/fritzcollectd
+    volumes:
+      - ./configs/collectd.conf:/etc/collectd/collectd.conf
+  influxdb:
+    hostname: influxdb
+    image: influxdb:1.7-alpine
+    volumes:
+      - ./influxdb:/var/lib/influxdb
+      - ./configs/influxdb.conf:/etc/influxdb/influxdb.conf
+      - ./configs/types.db:/usr/share/collectd/types.db
+    ports:
+      - "8086:8086"
