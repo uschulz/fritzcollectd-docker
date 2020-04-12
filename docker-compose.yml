@@ -1,0 +1,8 @@
+version: '3'
+services:
+  collectd:
+    image: uschulz/fritzcollectd
+    volumes:
+      - ./configs/collectd.conf:/etc/collectd/collectd.conf
+    ports:
+      - "25826:25826"
