@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collectd
+  labels:
+    app: collectd
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: collectd
+  template:
+    metadata:
+      labels:
+        app: collectd
+    spec:
+      containers:
+      - name: collectd
+        image: uschulz/fritzcollectd
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - name: collectd-configmap-volume
+            mountPath: /etc/collectd/collectd.conf
+            subPath: collectd.conf
+      volumes:
+      - name: collectd-configmap-volume
+        configMap:
+          name: collectd
+          items:
+            - key: collectd.conf
+              path: collectd.conf
+---
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: influxdb
+    labels:
+      app: influxdb
+  spec:
+    replicas: 1
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    selector:
+      matchLabels:
+        app: influxdb
+    template:
+      metadata:
+        labels:
+          app: influxdb
+      spec:
+        containers:
+        - name: influxdb
+          image: influxdb:1.7
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: influxdb-config-volume
+              mountPath: /etc/influxdb/influxdb.conf
+              subPath: influxdb.conf
+            - name: influxdb-config-volume
+              mountPath: /usr/share/collectd/types.db
+              subPath: types.db
+        volumes:
+        - name: influxdb-config-volume
+          configMap:
+            name: influxdb
+            items:
+              - key: influxdb.conf
+                path: influxdb.conf
+              - key: types.db
+                path: types.db
+---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: influxdb
+  spec:
+    ports:
+      - protocol: TCP
+        name: web
+        port: 8086
+        ports:
+      - protocol: UDP
+        name: collectd
+        port: 25826
+    selector:
+      app: influxdb
+            
